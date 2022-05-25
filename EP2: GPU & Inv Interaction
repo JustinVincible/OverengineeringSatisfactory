@@ -1,0 +1,138 @@
+---------------------
+
+function FindDevicesOfClass(class)
+  print("Find All Devices on Network of Certain Class")
+  local components = component.proxy(component.findComponent(findClass(class)))
+  for _,device in ipairs(components) do
+    print("Device",_,device)
+    print("ID:",device.id)
+  end
+  return components
+end
+
+----------------------
+
+function FindGPU(w,h)
+  gpu = computer.getPCIDevices(findClass("GPU_T1_C"))[1]
+  screen = component.proxy(component.findComponent(findClass("Build_Screen_C")))[1]
+
+  if not gpu then
+    error("ERROR: GPU is missing in computer.")
+  end
+
+  if not screen then
+    error("ERROR: No large screen connected.")
+  end
+
+  gpu:bindScreen(screen)
+  gpu:setSize(w,h)
+end
+
+-----------------
+
+function ClearScreen(w,h)
+  gpu:setBackground(0, 0, 0, 0)
+  gpu:setForeground(0, 0, 0, 1)
+  gpu:fill(0, 0, w, h, " ")
+  gpu:flush()
+end
+
+------------------
+
+function sleep(n)
+  local t0 = computer.time()
+  while computer.time() - t0 <= n do end
+end
+
+
+-------------------------
+
+screenWidth = 60
+screenHeight = 20
+
+FindGPU()
+ClearScreen(screenWidth,screenHeight)
+
+
+-----------------------------
+gpu:setText(0,0,"Hello World.")
+gpu:flush()
+----------------
+gpu:setForeground(1, 1, 0, 1)
+gpu:setText(0,1,"Hello World 2.")
+gpu:flush()
+----------
+
+gpu:setBackground(0, 1, 0, 1)
+gpu:setForeground(1, 0, 1, 1)
+gpu:fill(5,5,10,10,"-")
+gpu:flush()
+
+
+for i=0,2 do
+  gpu:setForeground(1, 0, i/screenHeight, 1)
+  gpu:setText(0,i,i)
+  gpu:flush()
+  sleep(1)
+end
+
+for i=2,0,-1 do
+  gpu:setForeground(1, i/screenWidth, 0, 1)
+  gpu:setText(i,0,i%10)
+  gpu:flush()
+  sleep(1)
+end
+
+
+
+-------------------
+storage = FindDevicesOfClass("Build_StorageContainerMk1_C")[1]
+
+inventories = storage:getInventories()
+inventory = inventories[1]
+size = inventory.size
+for i = 0,size-1 do
+  stack = inventory:getStack(i)
+  item = stack.item
+  if item.type then
+    print(item.type.name,stack.count)
+  end
+end
+
+
+---------------------------
+
+
+function getInv()
+  invStatus = {}
+  inventories = storage:getInventories()
+  inventory = inventories[1]
+  size = inventory.size
+  for i = 0,size-1 do
+    stack = inventory:getStack(i)
+    item = stack.item
+    if item.type then
+      print(item.type.name,stack.count)
+      x = "Item: " .. item.type.name .. "  Number  " .. stack.count
+      table.insert(invStatus, x)
+    end
+  end
+end
+--------------------
+
+ClearScreen(screenWidth,screenHeight)
+
+while true do
+  ClearScreen(screenWidth,screenHeight)
+  getInv()
+  gpu:setBackground(0.2, 0.3, 0.6, 1)
+  gpu:setForeground(1, 1, 1, 1)
+  gpu:setText(0,0,"Real-Time Inventory")
+  gpu:setBackground(0, 0, 0, 0)
+  for i = 1,#invStatus do
+    gpu:setText(0,i,invStatus[i])
+  end
+  gpu:flush()
+  sleep(10)
+end
+
