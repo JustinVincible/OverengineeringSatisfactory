@@ -1,0 +1,38 @@
+function FindGPU(w,h)
+  gpu = computer.getPCIDevices(findClass("GPU_T1_C"))[1]
+  screen = component.proxy(component.findComponent(findClass("Build_Screen_C")))[1]
+
+  if not gpu then
+    error("ERROR: GPU is missing in computer.")
+  end
+
+  if not screen then
+    error("ERROR: No large screen connected.")
+  end
+
+  gpu:bindScreen(screen)
+  gpu:setSize(w,h)
+end
+
+function ClearScreen(w,h)
+  gpu:setBackground(0, 0, 0, 0)
+  gpu:setForeground(0, 0, 0, 1)
+  gpu:fill(0, 0, w, h, " ")
+  gpu:flush()
+end
+
+
+function sleep(n)
+  local t0 = computer.time()
+  while computer.time() - t0 <= n do end
+end
+
+function FindDevicesOfClass(class)
+  print("Find All Devices on Network of Certain Class")
+  local components = component.proxy(component.findComponent(findClass(class)))
+  for _,device in ipairs(components) do
+    print("Device",_,device)
+    print("ID:",device.id)
+  end
+  return components
+end
